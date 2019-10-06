@@ -7,23 +7,27 @@
 
 void test_trigger_on_low()
 {
+    Quest_Trigger trigger = Quest_Trigger(TEST_PIN, LOW);
 
-
-    Quest_Trigger trigger = Quest_Trigger(TEST_PIN);
-
-    uint8_t pinValue = HIGH;
+    bool pinHigh = true;
     for (uint8_t i = 0; i < 10; i++)
     {
-        digitalWrite(TEST_PIN, pinValue);
-        TEST_ASSERT_EQUAL(pinValue == LOW, trigger.isTriggered());
-        if (pinValue == LOW)
-        {
-            pinValue = HIGH;
-        }
-        else
-        {
-            pinValue = LOW;
-        }
+        digitalWrite(TEST_PIN, pinHigh);
+        TEST_ASSERT_EQUAL(!pinHigh, trigger.isTriggered());
+        pinHigh = !pinHigh;
+    }
+}
+
+void test_trigger_on_high()
+{
+    Quest_Trigger trigger = Quest_Trigger(TEST_PIN, HIGH);
+
+    bool pinHigh = true;
+    for (uint8_t i = 0; i < 10; i++)
+    {
+        digitalWrite(TEST_PIN, pinHigh);
+        TEST_ASSERT_EQUAL(pinHigh, trigger.isTriggered());
+        pinHigh = !pinHigh;
     }
 }
 
@@ -36,8 +40,8 @@ void setup()
     pinMode(TEST_PIN, OUTPUT);
 
     RUN_TEST(test_trigger_on_low);
+    RUN_TEST(test_trigger_on_high);
 
-    // TODO: test trigger for high or low
     // TODO: test no trigger within debounce time for high or low
     // TODO: test minimum time before next trigger
 
