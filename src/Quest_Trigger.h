@@ -8,7 +8,10 @@ class Quest_Trigger
 public:
     Quest_Trigger(uint8_t pin);
 
+    bool isTriggered();
+
 private:
+    uint8_t pin;
 };
 
 #endif
