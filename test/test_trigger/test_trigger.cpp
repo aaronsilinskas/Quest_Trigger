@@ -3,32 +3,55 @@
 
 #include "Quest_Trigger.h"
 
-#define TEST_PIN A0
+#define PIN_TRIGGER_LOW A0
+#define PIN_TRIGGER_HIGH A1
 
 void test_trigger_on_low()
 {
-    Quest_Trigger trigger = Quest_Trigger(TEST_PIN, LOW);
+    Quest_Trigger trigger = Quest_Trigger(PIN_TRIGGER_LOW, LOW, 0);
 
-    bool pinHigh = true;
+    bool pinToggle = true;
     for (uint8_t i = 0; i < 10; i++)
     {
-        digitalWrite(TEST_PIN, pinHigh);
-        TEST_ASSERT_EQUAL(!pinHigh, trigger.isTriggered());
-        pinHigh = !pinHigh;
+        digitalWrite(PIN_TRIGGER_LOW, pinToggle);
+        TEST_ASSERT_EQUAL(!pinToggle, trigger.isTriggered());
+        pinToggle = !pinToggle;
     }
 }
 
 void test_trigger_on_high()
 {
-    Quest_Trigger trigger = Quest_Trigger(TEST_PIN, HIGH);
+    Quest_Trigger trigger = Quest_Trigger(PIN_TRIGGER_HIGH, HIGH, 0);
 
-    bool pinHigh = true;
+    bool pinToggle = true;
     for (uint8_t i = 0; i < 10; i++)
     {
-        digitalWrite(TEST_PIN, pinHigh);
-        TEST_ASSERT_EQUAL(pinHigh, trigger.isTriggered());
-        pinHigh = !pinHigh;
+        digitalWrite(PIN_TRIGGER_HIGH, pinToggle);
+        TEST_ASSERT_EQUAL(pinToggle, trigger.isTriggered());
+        pinToggle = !pinToggle;
     }
+}
+
+void test_no_trigger_before_debounce()
+{
+    uint8_t debounceMs = 100;
+    digitalWrite(PIN_TRIGGER_LOW, HIGH);
+    Quest_Trigger triggerLow = Quest_Trigger(PIN_TRIGGER_LOW, LOW, debounceMs);
+    digitalWrite(PIN_TRIGGER_HIGH, LOW);
+    Quest_Trigger triggerHigh = Quest_Trigger(PIN_TRIGGER_HIGH, HIGH, debounceMs);
+
+    uint64_t endTime = millis() + debounceMs;
+    digitalWrite(PIN_TRIGGER_LOW, LOW);
+    digitalWrite(PIN_TRIGGER_HIGH, HIGH);
+    while (millis() < endTime)
+    {
+        TEST_ASSERT_EQUAL(false, triggerLow.isTriggered());
+        TEST_ASSERT_EQUAL(false, triggerHigh.isTriggered());
+        delay(1);
+    }
+
+    TEST_ASSERT_EQUAL(true, triggerLow.isTriggered());
+    TEST_ASSERT_EQUAL(true, triggerHigh.isTriggered());
 }
 
 void setup()
@@ -37,13 +60,15 @@ void setup()
 
     UNITY_BEGIN();
 
-    pinMode(TEST_PIN, OUTPUT);
+    pinMode(PIN_TRIGGER_LOW, OUTPUT);
+    pinMode(PIN_TRIGGER_HIGH, OUTPUT);
 
     RUN_TEST(test_trigger_on_low);
     RUN_TEST(test_trigger_on_high);
+    RUN_TEST(test_no_trigger_before_debounce);
 
-    // TODO: test no trigger within debounce time for high or low
-    // TODO: test minimum time before next trigger
+    // TODO: test pin toggling before debounce time never triggers
+    // TODO: test minimum time before next trigger feature
 
     UNITY_END();
 }

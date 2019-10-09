@@ -6,13 +6,16 @@
 class Quest_Trigger
 {
 public:
-    Quest_Trigger(uint8_t pin, bool triggerValue);
+    Quest_Trigger(uint8_t pin, bool triggerValue, uint64_t debounceMs);
 
     bool isTriggered();
 
 private:
     uint8_t pin;
     bool triggerValue;
+    uint64_t debounceMs;
+    bool lastState;
+    uint64_t lastStateChangeMs;
 };
 
 #endif
