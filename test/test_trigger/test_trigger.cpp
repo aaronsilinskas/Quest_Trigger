@@ -89,8 +89,6 @@ void setup()
     RUN_TEST(test_trigger_on_high);
     RUN_TEST(test_no_trigger_if_toggled_before_debounce);
 
-    // TODO: test minimum time before next trigger feature
-
     UNITY_END();
 }
 
