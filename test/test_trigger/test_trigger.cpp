@@ -32,7 +32,7 @@ void test_trigger_on_high()
     }
 }
 
-void test_no_trigger_before_debounce()
+void test_trigger_only_after_debounce()
 {
     uint8_t debounceMs = 100;
     digitalWrite(PIN_TRIGGER_LOW, HIGH);
@@ -54,6 +54,28 @@ void test_no_trigger_before_debounce()
     TEST_ASSERT_EQUAL(true, triggerHigh.isTriggered());
 }
 
+void test_no_trigger_if_toggled_before_debounce() {
+    uint8_t debounceMs = 100;
+    digitalWrite(PIN_TRIGGER_LOW, HIGH);
+    Quest_Trigger triggerLow = Quest_Trigger(PIN_TRIGGER_LOW, LOW, debounceMs);
+    digitalWrite(PIN_TRIGGER_HIGH, LOW);
+    Quest_Trigger triggerHigh = Quest_Trigger(PIN_TRIGGER_HIGH, HIGH, debounceMs);
+
+    digitalWrite(PIN_TRIGGER_LOW, LOW);
+    digitalWrite(PIN_TRIGGER_HIGH, HIGH);
+
+    delay(debounceMs / 2);
+
+    digitalWrite(PIN_TRIGGER_LOW, HIGH);
+    digitalWrite(PIN_TRIGGER_HIGH, LOW);
+
+    delay(debounceMs / 2);
+    delay(1);
+
+    TEST_ASSERT_EQUAL(false, triggerLow.isTriggered());
+    TEST_ASSERT_EQUAL(false, triggerHigh.isTriggered());
+}
+
 void setup()
 {
     delay(4000);
@@ -65,9 +87,8 @@ void setup()
 
     RUN_TEST(test_trigger_on_low);
     RUN_TEST(test_trigger_on_high);
-    RUN_TEST(test_no_trigger_before_debounce);
+    RUN_TEST(test_no_trigger_if_toggled_before_debounce);
 
-    // TODO: test pin toggling before debounce time never triggers
     // TODO: test minimum time before next trigger feature
 
     UNITY_END();
