@@ -54,7 +54,8 @@ void test_trigger_only_after_debounce()
     TEST_ASSERT_EQUAL(true, triggerHigh.isTriggered());
 }
 
-void test_no_trigger_if_toggled_before_debounce() {
+void test_no_trigger_if_toggled_before_debounce()
+{
     uint8_t debounceMs = 100;
     digitalWrite(PIN_TRIGGER_LOW, HIGH);
     Quest_Trigger triggerLow = Quest_Trigger(PIN_TRIGGER_LOW, LOW, debounceMs);
@@ -76,6 +77,28 @@ void test_no_trigger_if_toggled_before_debounce() {
     TEST_ASSERT_EQUAL(false, triggerHigh.isTriggered());
 }
 
+void test_delay_retrigger()
+{
+    uint8_t debounceMs = 50;
+    uint8_t delayMs = 200;
+    digitalWrite(PIN_TRIGGER_LOW, LOW);
+    Quest_Trigger triggerLow = Quest_Trigger(PIN_TRIGGER_LOW, LOW, debounceMs);
+
+    delay(debounceMs + 1);
+
+    TEST_ASSERT_EQUAL(true, triggerLow.isTriggered());
+
+    uint64_t endTime = millis() + delayMs;
+    triggerLow.delayNextTrigger(delayMs);
+    while (millis() < endTime)
+    {
+        TEST_ASSERT_EQUAL(false, triggerLow.isTriggered());
+        delay(1);
+    }
+
+    TEST_ASSERT_EQUAL(true, triggerLow.isTriggered());
+}
+
 void setup()
 {
     delay(4000);
@@ -88,6 +111,7 @@ void setup()
     RUN_TEST(test_trigger_on_low);
     RUN_TEST(test_trigger_on_high);
     RUN_TEST(test_no_trigger_if_toggled_before_debounce);
+    RUN_TEST(test_delay_retrigger);
 
     UNITY_END();
 }
